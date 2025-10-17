@@ -1,0 +1,33 @@
+server:
+  port: 1500
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:1800/shop_management
+    username: shop_user
+    password: shop_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      mode: always
+
+app:
+  jwt:
+    secret: s9yq67Uc6CHinCj8gcj6+X5ihq3SE3pO4J7f7Ablt3U=
+    expiration-ms: 86400000
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
