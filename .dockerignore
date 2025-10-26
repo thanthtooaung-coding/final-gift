@@ -1,0 +1,15 @@
+target/
+.mvn/
+
+.idea/
+*.iml
+.DS_Store
+
+.git/
+.gitignore
+
+.env
+
+README.md
+API-TEST.md
+LICENSE
