@@ -1,7 +1,7 @@
 package com.shop.controller;
 
 import com.shop.dto.SaleRequestDto;
-import com.shop.entity.Sale;
+import com.shop.dto.SaleResponseDto;
 import com.shop.service.SaleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,21 +23,21 @@ public class SaleController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN', 'CASHIER')")
-    public ResponseEntity<Sale> createSale(@Valid @RequestBody SaleRequestDto saleRequestDto) {
-        Sale newSale = saleService.createSale(saleRequestDto);
+    public ResponseEntity<SaleResponseDto> createSale(@Valid @RequestBody SaleRequestDto saleRequestDto) {
+        SaleResponseDto newSale = saleService.createSale(saleRequestDto);
         return new ResponseEntity<>(newSale, HttpStatus.CREATED);
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
-    public ResponseEntity<List<Sale>> getAllSales() {
+    public ResponseEntity<List<SaleResponseDto>> getAllSales() {
         return ResponseEntity.ok(saleService.getAllSales());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
-    public ResponseEntity<Sale> getSaleById(@PathVariable Long id) {
-        Sale sale = saleService.getSaleById(id);
+    public ResponseEntity<SaleResponseDto> getSaleById(@PathVariable Long id) {
+        SaleResponseDto sale = saleService.getSaleById(id);
         return ResponseEntity.ok(sale);
     }
 }

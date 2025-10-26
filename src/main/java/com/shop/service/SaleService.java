@@ -3,12 +3,15 @@ package com.shop.service;
 import com.shop.dto.PaymentDto;
 import com.shop.dto.SaleItemDto;
 import com.shop.dto.SaleRequestDto;
+import com.shop.dto.SaleResponseDto;
 import com.shop.entity.*;
 import com.shop.repository.CustomerRepository;
 import com.shop.repository.ProductRepository;
 import com.shop.repository.SaleRepository;
+import com.shop.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,16 +32,19 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
     private final AtomicLong invoiceCounter = new AtomicLong(0);
-
+    private final ModelMapper modelMapper;
 
     @Transactional
-    public Sale createSale(SaleRequestDto saleRequestDto) {
-        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public SaleResponseDto createSale(SaleRequestDto saleRequestDto) {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User managedUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new EntityNotFoundException("Current user '" + currentUsername + "' not found in database"));
 
         Sale sale = new Sale();
         sale.setSaleDate(Instant.now());
-        sale.setUser(currentUser);
+        sale.setUser(managedUser);
         sale.setInvoiceNumber(generateInvoiceNumber());
 
         if (saleRequestDto.getCustomerId() != null) {
@@ -96,18 +103,51 @@ public class SaleService {
         }
         sale.setPayments(payments);
 
-        return saleRepository.save(sale);
+        Sale savedSale = saleRepository.save(sale);
+        return modelMapper.map(savedSale, SaleResponseDto.class);
     }
 
     @Transactional(readOnly = true)
-    public List<Sale> getAllSales() {
-        return saleRepository.findAll();
+    public List<SaleResponseDto> getAllSales() {
+        List<Sale> sales = saleRepository.findAll();
+        sales.forEach(sale -> {
+            sale.getSaleItems().size();
+            sale.getPayments().size();
+            sale.getUser().getUsername();
+            if (sale.getCustomer() != null) {
+                sale.getCustomer().getName();
+            }
+
+            sale.getSaleItems().forEach(item -> {
+                item.getProduct().getName();
+                if (item.getProduct().getCategory() != null) {
+                    item.getProduct().getCategory().getName();
+                }
+            });
+        });
+        return sales.stream()
+                .map(sale -> modelMapper.map(sale, SaleResponseDto.class))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Sale getSaleById(Long id) {
-        return saleRepository.findById(id)
+    public SaleResponseDto getSaleById(Long id) {
+        Sale sale = saleRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Sale not found with id: " + id));
+
+        sale.getSaleItems().size();
+        sale.getPayments().size();
+        sale.getUser().getUsername();
+        if (sale.getCustomer() != null) {
+            sale.getCustomer().getName();
+        }
+        for (SaleItem item : sale.getSaleItems()) {
+            item.getProduct().getName();
+            if (item.getProduct().getCategory() != null) {
+                item.getProduct().getCategory().getName();
+            }
+        }
+        return modelMapper.map(sale, SaleResponseDto.class);
     }
 
     private String generateInvoiceNumber() {

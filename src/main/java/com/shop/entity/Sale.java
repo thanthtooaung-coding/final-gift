@@ -1,5 +1,6 @@
 package com.shop.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -45,10 +46,12 @@ public class Sale {
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
+    @JsonManagedReference
     private List<SaleItem> saleItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
+    @JsonManagedReference
     private List<Payment> payments = new ArrayList<>();
 
     @CreationTimestamp
