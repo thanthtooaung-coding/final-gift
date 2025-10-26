@@ -1,17 +1,14 @@
-FROM eclipse-temurin:17-jdk-focal AS build
+FROM maven:3.9-eclipse-temurin-17 AS builder
 
-WORKDIR /workspace
+WORKDIR /app
 
-COPY mvnw .
 COPY pom.xml .
 
-RUN chmod +x ./mvnw
+RUN mvn dependency:go-offline
 
-RUN ./mvnw dependency:go-offline
+COPY src src
 
-COPY src ./src
-
-RUN ./mvnw package -DskipTests
+RUN mvn package -DskipTests
 
 FROM eclipse-temurin:17-jre-focal
 
@@ -20,8 +17,8 @@ USER appuser
 
 WORKDIR /app
 
-COPY --from=build /workspace/target/shop-management-0.0.1-SNAPSHOT.jar app.jar
-
 EXPOSE 1500
+
+COPY --from=build /workspace/target/shop-management-0.0.1-SNAPSHOT.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
