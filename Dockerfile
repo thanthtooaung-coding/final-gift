@@ -19,6 +19,6 @@ WORKDIR /app
 
 EXPOSE 1500
 
-COPY --from=builder /workspace/target/shop-management-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=builder /app/target/shop-management-0.0.1-SNAPSHOT.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
